@@ -1,5 +1,5 @@
 {
-  "name": "Authorize with JWT",
+  "name": "authorize-with-JWT",
   "version": "1.0.0",
   "description": "",
   "main": "app.js",
