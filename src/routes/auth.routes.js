@@ -57,4 +57,57 @@ router.post(
     }
 );
 
+// /api/auth/login
+router.post(
+    '/login',
+    [
+        check('email', 'EMAIL: Min length 6 and max length 255.').isLength({min: 6, max: 255}),
+        check('email', 'EMAIL: Not correct email.').isEmail(),
+        check('password', 'PASSWORD: Min length 6 and max length 1000.').isLength({min: 6, max: 1024}),
+    ],
+    async (req, res) => {
+        try {
+            const errors = validationResult(req);
+            if ( !errors.isEmpty() ) {
+                return res.status(400).json({
+                    errors : errors.array(),
+                    message: 'Not correct data per login.'
+                });
+            }
+
+            const {email, password} = req.body;
+
+            const currentUser = await User.findOne({email});
+
+            if (!currentUser) {
+                return res.status(200).json({message: `Can't find User with that email.`});
+            }
+
+            const isMatch = await bcrypt.compare(password, currentUser.password);
+
+            if(!isMatch) {
+                return res.status(200).json({message: 'Wrong credentials.'});
+            }
+            const userId = currentUser._id;
+
+            const token = jwt.sign(
+                { userId },
+                process.env.JWT_SECRET,
+                {expiresIn : '10h'}
+            );
+
+            res.status(200).json({
+                userId,
+                token,
+                message: 'Successfully logged In.',
+            });
+
+
+        } catch (e) {
+            console.log('Dear Developer catched a SERVER ERROR... /api/auth/login ...', e.message, e);
+            res.status(500).json({message: 'Something went wrong'});
+        }
+    }
+);
+
 module.exports = router;
