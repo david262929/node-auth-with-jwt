@@ -1,6 +1,8 @@
 const {Router} = require('express')
 const {check, validationResult} = require('express-validator')
 
+const auth = require('../middleware/auth.middleware')
+
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 require('dotenv').config()
@@ -108,6 +110,16 @@ router.post(
             res.status(500).json({message: 'Something went wrong'});
         }
     }
+);
+
+// /api/auth/register
+router.post(
+    '/verify',
+    auth,
+    async (req, res) => res.status(200).json({
+        userId : req.user.userId,
+        message: 'Authorized',
+    })
 );
 
 module.exports = router;
